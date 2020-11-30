@@ -3,10 +3,12 @@
 Use a chaining API to generate and simplify the modification of
 webpack configurations.
 
-This documentation corresponds to v4 of webpack-chain, which Neutrino utilizes.
+This documentation corresponds to v6 of webpack-chain, which Neutrino utilizes.
 
-_Note: while webpack-chain is utilized extensively in Neutrino, the package is completely
-standalone and can be used by any project. See the webpack-chain repo for standalone documentation._
+_Note: while webpack-chain is utilized extensively in Neutrino, the package is
+completely standalone and can be used by any project.
+See the [webpack-chain](https://github.com/neutrinojs/webpack-chain) repository
+for standalone documentation._
 
 ## Introduction
 
@@ -94,24 +96,26 @@ module.exports = (neutrino) => {
         .loader('babel-loader')
         .options({
           presets: [
-            ['babel-preset-es2015', { modules: false }]
+            ['@babel/preset-env', { modules: false }]
           ]
         });
 
   // Create named plugins too!
   neutrino.config
     .plugin('clean')
-      .use(CleanPlugin, [['dist'], { root: '/dir' }]);
+      .use(CleanPlugin);
 };
 ```
 
 ## ChainedMap
 
-One of the core API interfaces in Neutrino configuration is a `ChainedMap`. A `ChainedMap` operates
-similar to a JavaScript Map, with some conveniences for chaining and generating configuration.
-If a property is marked as being a `ChainedMap`, it will have an API and methods as described below:
+One of the core API interfaces in Neutrino configuration is a `ChainedMap`. A
+`ChainedMap` operates similar to a JavaScript Map, with some conveniences for
+chaining and generating configuration. If a property is marked as being a
+`ChainedMap`, it will have an API and methods as described below:
 
-**Unless stated otherwise, these methods will return the `ChainedMap`, allowing you to chain these methods.**
+**Unless stated otherwise, these methods will return the `ChainedMap`, allowing
+you to chain these methods.**
 
 ```js
 // Remove all entries from a Map.
@@ -132,6 +136,15 @@ get(key)
 ```
 
 ```js
+// Fetch the value from a Map located at the corresponding key.
+// If the key is missing, the key is set to the result of function fn.
+// key: *
+// fn: Function () -> value
+// returns: value
+getOrCompute(key, fn)
+```
+
+```js
 // Set a value on the Map stored at the `key` location.
 // key: *
 // value: *
@@ -139,7 +152,8 @@ set(key, value)
 ```
 
 ```js
-// Returns `true` or `false` based on whether a Map as has a value set at a particular key.
+// Returns `true` or `false` based on whether a Map as has a value set at a
+// particular key.
 // key: *
 // returns: Boolean
 has(key)
@@ -191,11 +205,13 @@ when(condition, whenTruthy, whenFalsy)
 
 ## ChainedSet
 
-Another of the core API interfaces in Neutrino configuration is a `ChainedSet`. A `ChainedSet` operates
-similar to a JavaScript Set, with some conveniences for chaining and generating configuration.
-If a property is marked as being a `ChainedSet`, it will have an API and methods as described below:
+Another of the core API interfaces in Neutrino configuration is a `ChainedSet`. A
+`ChainedSet` operates similar to a JavaScript Set, with some conveniences for
+chaining and generating configuration. If a property is marked as being a
+`ChainedSet`, it will have an API and methods as described below:
 
-**Unless stated otherwise, these methods will return the `ChainedSet`, allowing you to chain these methods.**
+**Unless stated otherwise, these methods will return the `ChainedSet`, allowing
+you to chain these methods.**
 
 ```js
 // Add/append a value to the end of a Set.
@@ -271,8 +287,8 @@ neutrino.config.devServer.hot(true);
 neutrino.config.devServer.set('hot', true);
 ```
 
-A shorthand method is chainable, so calling it will return the original instance,
-allowing you to continue to chain.
+A shorthand method is chainable, so calling it will return the original
+instance, allowing you to continue to chain.
 
 ### Config
 
@@ -283,8 +299,8 @@ If you are familiar with jQuery, `.end()` works similarly. All API calls
 will return the API instance at the current context unless otherwise
 specified. This is so you may chain API calls continuously if desired.
 
-For details on the specific values that are valid for all shorthand and low-level methods,
-please refer to their corresponding name in the
+For details on the specific values that are valid for all shorthand and
+low-level methods, please refer to their corresponding name in the
 [webpack docs hierarchy](https://webpack.js.org/configuration/).
 
 ```js
@@ -303,6 +319,7 @@ neutrino.config
   .externals(externals)
   .loader(loader)
   .mode(mode)
+  .name(name)
   .parallelism(parallelism)
   .profile(profile)
   .recordsPath(recordsPath)
@@ -396,7 +413,6 @@ neutrino.config.resolve.alias : ChainedMap
 
 neutrino.config.resolve.alias
   .set(key, value)
-  .set(key, value)
   .delete(key)
   .clear()
 ```
@@ -469,31 +485,8 @@ neutrino.config.resolve.mainFiles
 
 #### Config resolveLoader
 
-```js
-neutrino.config.resolveLoader : ChainedMap
-```
-
-#### Config resolveLoader extensions
-
-```js
-neutrino.config.resolveLoader.extensions : ChainedSet
-
-neutrino.config.resolveLoader.extensions
-  .add(value)
-  .prepend(value)
-  .clear()
-```
-
-#### Config resolveLoader modules
-
-```js
-neutrino.config.resolveLoader.modules : ChainedSet
-
-neutrino.config.resolveLoader.modules
-  .add(value)
-  .prepend(value)
-  .clear()
-```
+The API for `neutrino.config.resolveLoader` is identical to `neutrino.config.resolve` with
+the following additions:
 
 #### Config resolveLoader moduleExtensions
 
@@ -555,6 +548,64 @@ neutrino.config.optimization
   .usedExports(usedExports)
 ```
 
+#### Config optimization minimizers
+
+```js
+// Backed at neutrino.config.optimization.minimizers
+neutrino.config.optimization
+  .minimizer(name) : ChainedMap
+```
+
+#### Config optimization minimizers: adding
+
+_NOTE: Do not use `new` to create the minimizer plugin, as this will be done for you._
+
+```js
+neutrino.config.optimization
+  .minimizer(name)
+  .use(WebpackPlugin, args)
+
+// Examples
+
+neutrino.config.optimization
+  .minimizer('css')
+  .use(OptimizeCSSAssetsPlugin, [{ cssProcessorOptions: { safe: true } }])
+
+// Minimizer plugins can also be specified by their path, allowing the expensive require()s to be
+// skipped in cases where the plugin or webpack configuration won't end up being used.
+neutrino.config.optimization
+  .minimizer('css')
+  .use(require.resolve('optimize-css-assets-webpack-plugin'), [{ cssProcessorOptions: { safe: true } }])
+
+```
+
+#### Config optimization minimizers: modify arguments
+
+```js
+neutrino.config.optimization
+  .minimizer(name)
+  .tap(args => newArgs)
+
+// Example
+neutrino.config.optimization
+  .minimizer('css')
+  .tap(args => [...args, { cssProcessorOptions: { safe: false } }])
+```
+
+#### Config optimization minimizers: modify instantiation
+
+```js
+neutrino.config.optimization
+  .minimizer(name)
+  .init((Plugin, args) => new Plugin(...args));
+```
+
+#### Config optimization minimizers: removing
+
+```js
+neutrino.config.optimization.minimizers.delete(name)
+```
+
 #### Config plugins
 
 ```js
@@ -569,16 +620,19 @@ _NOTE: Do not use `new` to create the plugin, as this will be done for you._
 ```js
 neutrino.config
   .plugin(name)
-    .use(WebpackPlugin, args)
+  .use(WebpackPlugin, args)
 
 // Examples
-neutrino.config
-  .plugin('hot')
-    .use(webpack.HotModuleReplacementPlugin);
 
 neutrino.config
+  .plugin('hot')
+  .use(webpack.HotModuleReplacementPlugin);
+
+// Plugins can also be specified by their path, allowing the expensive require()s to be
+// skipped in cases where the plugin or webpack configuration won't end up being used.
+neutrino.config
   .plugin('env')
-    .use(webpack.EnvironmentPlugin, ['NODE_ENV']);
+  .use(require.resolve('webpack/lib/EnvironmentPlugin'), [{ 'VAR': false }]);
 ```
 
 #### Config plugins: modify arguments
@@ -586,12 +640,12 @@ neutrino.config
 ```js
 neutrino.config
   .plugin(name)
-    .tap(args => newArgs)
+  .tap(args => newArgs)
 
 // Example
 neutrino.config
   .plugin('env')
-    .tap(args => [...args, 'SECRET_KEY']);
+  .tap(args => [...args, 'SECRET_KEY']);
 ```
 
 #### Config plugins: modify instantiation
@@ -599,7 +653,7 @@ neutrino.config
 ```js
 neutrino.config
   .plugin(name)
-    .init((Plugin, args) => new Plugin(...args));
+  .init((Plugin, args) => new Plugin(...args));
 ```
 
 #### Config plugins: removing
@@ -610,14 +664,14 @@ neutrino.config.plugins.delete(name)
 
 #### Config plugins: ordering before
 
-Specify that the current `plugin` context should operate before another named `plugin`.
-You cannot use both `.before()` and `.after()` on the same plugin.
+Specify that the current `plugin` context should operate before another named
+`plugin`. You cannot use both `.before()` and `.after()` on the same plugin.
 
 ```js
 neutrino.config
   .plugin(name)
     .before(otherName)
-    
+
 // Example
 
 neutrino.config
@@ -631,8 +685,8 @@ neutrino.config
 
 #### Config plugins: ordering after
 
-Specify that the current `plugin` context should operate after another named `plugin`.
-You cannot use both `.before()` and `.after()` on the same plugin.
+Specify that the current `plugin` context should operate after another named
+`plugin`. You cannot use both `.before()` and `.after()` on the same plugin.
 
 ```js
 neutrino.config
@@ -664,7 +718,7 @@ _NOTE: Do not use `new` to create the plugin, as this will be done for you._
 ```js
 neutrino.config.resolve
   .plugin(name)
-    .use(WebpackPlugin, args)
+  .use(WebpackPlugin, args)
 ```
 
 #### Config resolve plugins: modify arguments
@@ -672,7 +726,7 @@ neutrino.config.resolve
 ```js
 neutrino.config.resolve
   .plugin(name)
-    .tap(args => newArgs)
+  .tap(args => newArgs)
 ```
 
 #### Config resolve plugins: modify instantiation
@@ -680,7 +734,7 @@ neutrino.config.resolve
 ```js
 neutrino.config.resolve
   .plugin(name)
-    .init((Plugin, args) => new Plugin(...args))
+  .init((Plugin, args) => new Plugin(...args))
 ```
 
 #### Config resolve plugins: removing
@@ -691,8 +745,9 @@ neutrino.config.resolve.plugins.delete(name)
 
 #### Config resolve plugins: ordering before
 
-Specify that the current `plugin` context should operate before another named `plugin`.
-You cannot use both `.before()` and `.after()` on the same resolve plugin.
+Specify that the current `plugin` context should operate before another named
+`plugin`. You cannot use both `.before()` and `.after()` on the same resolve
+plugin.
 
 ```js
 neutrino.config.resolve
@@ -712,8 +767,9 @@ neutrino.config.resolve
 
 #### Config resolve plugins: ordering after
 
-Specify that the current `plugin` context should operate after another named `plugin`.
-You cannot use both `.before()` and `.after()` on the same resolve plugin.
+Specify that the current `plugin` context should operate after another named
+`plugin`. You cannot use both `.before()` and `.after()` on the same resolve
+plugin.
 
 ```js
 neutrino.config.resolve
@@ -783,7 +839,7 @@ neutrino.config.devServer
   .openPage(openPage)
   .overlay(overlay)
   .pfx(pfx)
-  .pfxPassphrase(pfsPassphrase)
+  .pfxPassphrase(pfxPassphrase)
   .port(port)
   .progress(progress)
   .proxy(proxy)
@@ -845,7 +901,7 @@ neutrino.config.module
   .rule('compile')
     .use('babel')
       .loader('babel-loader')
-      .options({ presets: ['babel-preset-es2015'] });
+      .options({ presets: ['@babel/preset-env'] });
 ```
 
 #### Config module rules uses (loaders): modifying options
@@ -861,7 +917,9 @@ neutrino.config.module
 neutrino.config.module
   .rule('compile')
     .use('babel')
-      .tap(options => merge(options, { plugins: ['babel-plugin-syntax-object-rest-spread'] }));
+      .tap(options => merge(options, {
+        plugins: ['@babel/plugin-proposal-class-properties']
+      }));
 ```
 
 #### Config module rules oneOfs (conditional rules):
@@ -889,14 +947,76 @@ neutrino.config.module
         .loader('file-loader')
 ```
 
+#### Config module rules oneOfs (conditional rules): ordering before
+
+Specify that the current `oneOf` context should operate before another named
+`oneOf`. You cannot use both `.before()` and `.after()` on the same `oneOf`.
+
+```js
+neutrino.config.module
+  .rule(name)
+    .oneOf(name)
+      .before()
+
+// Example
+
+neutrino.config.module
+  .rule('scss')
+    .test(/\.scss$/)
+    .oneOf('normal')
+      .use('sass')
+        .loader('sass-loader')
+        .end()
+      .end()
+    .oneOf('sass-vars')
+      .before('normal')
+      .resourceQuery(/\?sassvars/)
+      .use('sass-vars')
+        .loader('sass-vars-to-js-loader')
+```
+
+#### Config module rules oneOfs (conditional rules): ordering after
+
+Specify that the current `oneOf` context should operate after another named
+`oneOf`. You cannot use both `.before()` and `.after()` on the same `oneOf`.
+
+```js
+neutrino.config.module
+  .rule(name)
+    .oneOf(name)
+      .after()
+
+// Example
+
+neutrino.config.module
+  .rule('scss')
+    .test(/\.scss$/)
+    .oneOf('vue')
+      .resourceQuery(/\?vue/)
+      .use('vue-style')
+        .loader('vue-style-loader')
+        .end()
+      .end()
+    .oneOf('normal')
+      .use('sass')
+        .loader('sass-loader')
+        .end()
+      .end()
+    .oneOf('sass-vars')
+      .after('vue')
+      .resourceQuery(/\?sassvars/)
+      .use('sass-vars')
+        .loader('sass-vars-to-js-loader')
+```
+
 ---
 
 ### Merging Config
 
-Neutrino config supports merging in an object to the configuration instance which matches a layout
-similar to how the configuration schema is laid out. Note that this is not a webpack configuration
-object, but you may transform a webpack configuration object before providing it to Neutrino configuration
-to match its layout.
+Neutrino config supports merging in an object to the configuration instance which
+matches a layout similar to how the configuration schema is laid out. Note that
+this is not a webpack configuration object, but you may transform a webpack
+configuration object before providing it to Neutrino configuration to match its layout.
 
 ```js
 neutrino.config.merge({ devtool: 'source-map' });
@@ -972,7 +1092,7 @@ neutrino.config.merge({
     [key]: value
   },
 
-  optimizations: {
+  optimization: {
     concatenateModules,
     flagIncludedChunks,
     mergeDuplicateChunks,
@@ -1028,10 +1148,26 @@ neutrino.config.merge({
   resolveLoader: {
     [key]: value,
 
+    alias: {
+      [key]: value
+    },
+    aliasFields: [...values],
+    descriptionFields: [...values],
     extensions: [...values],
+    mainFields: [...values],
+    mainFiles: [...values],
     modules: [...values],
     moduleExtensions: [...values],
-    packageMains: [...values]
+    packageMains: [...values],
+
+    plugin: {
+      [name]: {
+        plugin: WebpackPlugin,
+        args: [...args],
+        before,
+        after
+      }
+    }
   },
 
   module: {
@@ -1071,10 +1207,13 @@ neutrino.config.merge({
 
 ### Conditional configuration
 
-When working with instances of `ChainedMap` and `ChainedSet`, you can perform conditional configuration using `when`.
-You must specify an expression to `when()` which will be evaluated for truthiness or falsiness. If the expression is
-truthy, the first function argument will be invoked with an instance of the current chained instance. You can optionally
-provide a second function to be invoked when the condition is falsy, which is also given the current chained instance.
+When working with instances of `ChainedMap` and `ChainedSet`, you can perform
+conditional configuration using `when`. You must specify an expression to
+`when()` which will be evaluated for truthiness or falsiness. If the expression
+is truthy, the first function argument will be invoked with an instance of the
+current chained instance. You can optionally provide a second function to be
+invoked when the condition is falsy, which is also given the current chained
+instance.
 
 ```js
 // Example: Only add minify plugin during production
@@ -1094,4 +1233,141 @@ neutrino.config
     config => config.plugin('minify').use(BabelMinifyWebpackPlugin),
     config => config.devtool('source-map')
   );
+```
+
+### Inspecting generated configuration
+
+You can inspect the generated webpack config using `neutrino.config.toString()`. This
+will generate a stringified version of the config with comment hints for named
+rules, uses and plugins:
+
+``` js
+neutrino.config
+  .module
+    .rule('compile')
+      .test(/\.js$/)
+      .use('babel')
+        .loader('babel-loader');
+
+neutrino.config.toString({ configPrefix: 'neutrino.config' });
+
+/*
+{
+  module: {
+    rules: [
+      /* neutrino.config.module.rule('compile') */
+      {
+        test: /\.js$/,
+        use: [
+          /* neutrino.config.module.rule('compile').use('babel') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      }
+    ]
+  }
+}
+*/
+```
+
+By default the generated string cannot be used directly as real webpack config
+if it contains functions and plugins that need to be required. In order to
+generate usable config, you can customize how functions and plugins are
+stringified by setting a special `__expression` property on them:
+
+``` js
+class MyPlugin {}
+MyPlugin.__expression = `require('my-plugin')`;
+
+function myFunction () {}
+myFunction.__expression = `require('my-function')`;
+
+neutrino.config
+  .plugin('example')
+    .use(MyPlugin, [{ fn: myFunction }]);
+
+neutrino.config.toString({ configPrefix: 'neutrino.config' });
+
+/*
+{
+  plugins: [
+    new (require('my-plugin'))({
+      fn: require('my-function')
+    })
+  ]
+}
+*/
+```
+
+Plugins specified via their path will have their `require()` statement generated
+automatically:
+
+``` js
+neutrino.config
+  .plugin('env')
+    .use(require.resolve('webpack/lib/ProvidePlugin'), [{ jQuery: 'jquery' }])
+
+neutrino.config.toString({ configPrefix: 'neutrino.config' });
+
+/*
+{
+  plugins: [
+    new (require('/foo/bar/src/node_modules/webpack/lib/EnvironmentPlugin.js'))(
+      {
+        jQuery: 'jquery'
+      }
+    )
+  ]
+}
+*/
+```
+
+You can also call `toString` as a static method on `Config` in order to
+modify the configuration object prior to stringifying.
+
+```js
+Config.toString(
+  {
+    ...neutrino.config.toConfig(),
+    module: {
+      defaultRules: [
+        {
+          use: [
+            {
+              loader: 'banner-loader',
+              options: { prefix: 'banner-prefix.txt' },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    configPrefix: 'neutrino.config'
+  }
+)
+
+/*
+{
+  plugins: [
+    /* neutrino.config.plugin('foo') */
+    new TestPlugin()
+  ],
+  module: {
+    defaultRules: [
+      {
+        use: [
+          {
+            loader: 'banner-loader',
+            options: {
+              prefix: 'banner-prefix.txt'
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+*/
 ```

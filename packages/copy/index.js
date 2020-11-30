@@ -1,13 +1,11 @@
-const CopyPlugin = require('copy-webpack-plugin');
-
-module.exports = (neutrino, { pluginId = 'copy', patterns = [], options = {} } = {}) => {
-  neutrino.config
-    .plugin(pluginId)
-    .use(CopyPlugin, [
-      patterns,
-      {
-        debug: neutrino.options.debug,
-        ...options
-      }
-    ]);
+module.exports = ({ pluginId = 'copy', patterns = [], options = {} } = {}) => (
+  neutrino,
+) => {
+  neutrino.config.plugin(pluginId).use(require.resolve('copy-webpack-plugin'), [
+    patterns,
+    {
+      logLevel: neutrino.options.debug ? 'debug' : 'warn',
+      ...options,
+    },
+  ]);
 };

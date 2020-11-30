@@ -1,13 +1,13 @@
-const { BannerPlugin } = require('webpack');
-
-module.exports = (neutrino, { pluginId = 'banner', ...options } = {}) => {
+module.exports = ({ pluginId = 'banner', ...options } = {}) => (neutrino) => {
   neutrino.config
     .plugin(pluginId)
-    .use(BannerPlugin, [{
-      banner: 'require(\'source-map-support\').install();',
-      test: neutrino.regexFromExtensions(),
-      raw: true,
-      entryOnly: true,
-      ...options
-    }]);
+    .use(require.resolve('webpack/lib/BannerPlugin'), [
+      {
+        banner: "require('source-map-support').install();",
+        test: neutrino.regexFromExtensions(),
+        raw: true,
+        entryOnly: true,
+        ...options,
+      },
+    ]);
 };

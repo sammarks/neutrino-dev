@@ -1,20 +1,34 @@
-const yargs = require('yargs');
+const yargsParser = require('yargs-parser');
+const { join } = require('path');
 const Neutrino = require('./Neutrino');
-const webpack = require('./webpack');
+const { webpack, inspect } = require('./handlers');
+const { ConfigurationError } = require('./errors');
 
-const configPrefix = 'neutrino.config';
+const extractMiddlewareAndOptions = (format) =>
+  typeof format === 'function' ? { ...format, use: format } : { ...format };
 
-module.exports = (middleware = { use: ['.neutrinorc.js'] }, options = {}) => {
+module.exports = (
+  // eslint-disable-next-line global-require, import/no-dynamic-require
+  middleware = require(join(process.cwd(), '.neutrinorc.js')),
+) => {
+  const { use, options, env } = extractMiddlewareAndOptions(middleware);
+
+  if (env) {
+    throw new ConfigurationError(
+      'Specifying "env" in middleware has been removed.' +
+        'Apply middleware conditionally instead.',
+    );
+  }
+
   const neutrino = new Neutrino(options);
-  const { argv } = yargs;
-  let { mode } = argv;
+  let { mode } = yargsParser(process.argv.slice(2));
 
   if (mode) {
     // If specified, --mode takes priority and overrides any existing NODE_ENV.
     process.env.NODE_ENV = mode;
   } else if (process.env.NODE_ENV) {
     // Development mode is most appropriate for a !production NODE_ENV (such as `NODE_ENV=test`).
-    mode = (process.env.NODE_ENV === 'production') ? 'production' : 'development';
+    mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
   } else {
     // Default NODE_ENV to the more strict value, to save needing to do so in .eslintrc.js.
     // However don't set `mode` since webpack already defaults it to `production`, and in so
@@ -27,18 +41,26 @@ module.exports = (middleware = { use: ['.neutrinorc.js'] }, options = {}) => {
   }
 
   neutrino.register('webpack', webpack);
+  neutrino.register('inspect', inspect);
 
-  if (middleware) {
-    neutrino.use(middleware);
+  if (use) {
+    try {
+      if (Array.isArray(use)) {
+        use.forEach((use) => neutrino.use(use));
+      } else {
+        neutrino.use(use);
+      }
+    } catch (err) {
+      console.error(
+        '\nAn error occurred when loading the Neutrino configuration.\n',
+      );
+      console.error(err);
+      process.exit(1);
+    }
   }
 
   const adapter = {
     output(name) {
-      if (name === 'inspect') {
-        console.log(neutrino.config.toString({ configPrefix }));
-        process.exit();
-      }
-
       const handler = neutrino.outputHandlers.get(name);
 
       if (!handler) {
@@ -46,7 +68,7 @@ module.exports = (middleware = { use: ['.neutrinorc.js'] }, options = {}) => {
       }
 
       return handler(neutrino);
-    }
+    },
   };
 
   return new Proxy(adapter, {
@@ -54,6 +76,6 @@ module.exports = (middleware = { use: ['.neutrinorc.js'] }, options = {}) => {
       return property === 'output'
         ? Reflect.get(object, property)
         : Reflect.get(object, 'output').bind(object, property);
-    }
+    },
   });
 };

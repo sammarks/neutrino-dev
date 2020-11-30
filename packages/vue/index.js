@@ -1,42 +1,77 @@
-const loaderMerge = require('@neutrinojs/loader-merge');
 const web = require('@neutrinojs/web');
 const merge = require('deepmerge');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
-module.exports = (neutrino, opts = {}) => {
-  // vue-loader extracts <style> tags to CSS files so they are parsed
-  // automatically by the css-loader. In order to enable CSS modules
-  // on these CSS files, we need to say that normal CSS files can use
-  // CSS modules.
-  const options = merge({
-    style: {
-      ruleId: 'style',
-      styleUseId: 'style',
-      extract: process.env.NODE_ENV === 'production',
-      exclude: [],
-      modulesTest: neutrino.regexFromExtensions(['css']),
-      modulesSuffix: ''
-    }
-  }, opts);
+const applyUse = (from) => (to) => {
+  from.uses.values().forEach((use) => {
+    to.use(use.name).merge(use.entries());
+  });
+};
 
-  neutrino.use(web, options);
+// vue-loader needs CSS files to be parsed with vue-style-loader instead of
+// style-loader, so we replace the loader with the one vue wants.
+// This is only required when using style-loader and not when extracting CSS.
+const replaceStyleLoader = (rule) => {
+  if (rule.uses.has('style')) {
+    rule.use('style').loader(require.resolve('vue-style-loader'));
+  }
+};
 
-  // vue-loader needs CSS files to be parsed with vue-style-loader instead of
-  // style-loader, so we replace the loader with the one vue wants.
-  if (!options.style.extract) {
-    neutrino.config.module
-      .rule(options.style.ruleId)
-      .use(options.style.styleUseId)
-      .loader(require.resolve('vue-style-loader'));
+module.exports = (opts = {}) => (neutrino) => {
+  const options = merge(
+    {
+      style: {
+        ruleId: 'style',
+      },
+    },
+    opts,
+  );
+
+  // Add vue extension as a higher priority than JS files.
+  // Since neutrino.options.extensions is always a copy of a Set,
+  // this splice operation is always mutation-safe.
+  const { extensions } = neutrino.options;
+  const index = extensions.indexOf('js');
+
+  extensions.splice(index, 0, 'vue');
+
+  neutrino.options.extensions = extensions; // eslint-disable-line no-param-reassign
+  neutrino.use(web(options));
+
+  // Vue component oneOfs are prepended to our style rule so they match first.
+  // The test from the "normal" oneOf is also applied.
+  const styleRule = neutrino.config.module.rules.get(options.style.ruleId);
+  const styleTest = styleRule.oneOf('normal').get('test');
+  const styleModulesEnabled = styleRule.oneOfs.has('modules');
+
+  if (styleRule) {
+    styleRule
+      .when(styleModulesEnabled, (rule) => {
+        rule
+          .oneOf('vue-modules')
+          .before('modules')
+          .test(styleTest)
+          .resourceQuery(/module/)
+          .batch(applyUse(styleRule.oneOf('modules')))
+          .batch(replaceStyleLoader);
+      })
+      .when(styleRule.oneOf('normal'), (rule) => {
+        rule
+          .oneOf('vue-normal')
+          .before(styleModulesEnabled ? 'modules' : 'normal')
+          .test(styleTest)
+          .resourceQuery(/\?vue/)
+          .batch(applyUse(styleRule.oneOf('normal')))
+          .batch(replaceStyleLoader);
+      });
   }
 
   neutrino.config.module
     .rule('vue')
-      .test(neutrino.regexFromExtensions(['vue']))
-      .use('vue')
-        .loader(require.resolve('vue-loader'));
+    .test(neutrino.regexFromExtensions(['vue']))
+    .use('vue')
+    .loader(require.resolve('vue-loader'));
 
-  neutrino.config.plugin('vue').use(VueLoaderPlugin);
+  neutrino.config.plugin('vue').use(require.resolve('vue-loader/lib/plugin'));
 
   if (neutrino.config.module.rules.has('compile')) {
     // We need to remove vue files from being parsed by Babel since the
@@ -45,39 +80,34 @@ module.exports = (neutrino, opts = {}) => {
     // which will then be parsed by Babel, so no need for a double parse.
     neutrino.config.module
       .rule('compile')
-      .test(neutrino.regexFromExtensions(
-        neutrino.options.extensions.filter(ext => ext !== 'vue'))
+      .test(
+        neutrino.regexFromExtensions(
+          neutrino.options.extensions.filter((ext) => ext !== 'vue'),
+        ),
       );
   }
 
-  neutrino.config.when(neutrino.config.module.rules.has('lint'), () => {
-    neutrino.use(loaderMerge('lint', 'eslint'), {
-      baseConfig: {
-        extends: ['plugin:vue/base']
-      },
-      plugins: ['vue'],
-      parser: 'vue-eslint-parser',
-      parserOptions: {
-        parser: 'babel-eslint'
-      }
-    });
-  });
+  const lintRule = neutrino.config.module.rules.get('lint');
+  if (lintRule) {
+    // We need to re-set the extension list used by the eslint settings
+    // since when it was generated it didn't include the vue extension.
+    lintRule.test(neutrino.regexFromExtensions());
 
-  if (neutrino.config.plugins.has('stylelint')) {
-    neutrino.config
-      .plugin('stylelint')
-      .tap(([options, ...args]) => [
-        merge(options, {
-          files: ['**/*.vue'],
-          config: {
-            processors: [require.resolve('stylelint-processor-html')],
-            rules: {
-              // allows empty <style> in vue components
-              'no-empty-source': null
-            }
-          }
-        }),
-        ...args
-      ]);
+    lintRule.use('eslint').tap(
+      // Don't adjust the lint configuration for projects using their own .eslintrc.
+      (lintOptions) =>
+        lintOptions.useEslintrc
+          ? lintOptions
+          : merge(lintOptions, {
+              baseConfig: {
+                extends: ['plugin:vue/base'],
+                parser: 'vue-eslint-parser',
+                parserOptions: {
+                  parser: 'babel-eslint',
+                },
+                plugins: ['vue'],
+              },
+            }),
+    );
   }
 };

@@ -1,17 +1,17 @@
 # Neutrino Style Minify Middleware
 
 `@neutrinojs/style-minify` is Neutrino middleware for minifying styles using
-[`OptimizeCssAssetsPlugin`](https://www.npmjs.com/package/optimize-css-assets-webpack-plugin). This middleware is usually only
-added during production builds.
+[`OptimizeCssAssetsPlugin`](https://www.npmjs.com/package/optimize-css-assets-webpack-plugin).
+This middleware is usually only added during production builds.
 
-[![NPM version][npm-image]][npm-url]
-[![NPM downloads][npm-downloads]][npm-url]
+[![NPM version][npm-image]][npm-url] [![NPM downloads][npm-downloads]][npm-url]
 
 ## Requirements
 
-- Node.js v8.3+
+- Node.js 10+
 - Yarn v1.2.1+, or npm v5.4+
-- Neutrino v8
+- Neutrino 9
+- webpack 4
 
 ## Installation
 
@@ -20,80 +20,86 @@ added during production builds.
 #### Yarn
 
 ```bash
-❯ yarn add @neutrinojs/style-minify
+❯ yarn add --dev @neutrinojs/style-minify
 ```
 
 #### npm
 
 ```bash
-❯ npm install --save @neutrinojs/style-minify
+❯ npm install --save-dev @neutrinojs/style-minify
 ```
 
 ## Usage
 
-`@neutrinojs/style-minify` can be consumed from the Neutrino API, middleware, or presets. Require this package
-and plug it into Neutrino:
+`@neutrinojs/style-minify` can be consumed from the Neutrino API, middleware, or
+presets. Require this package and plug it into Neutrino:
 
 ```js
-// Using function middleware format
 const styleMinify = require('@neutrinojs/style-minify');
 
 // Use with default options
-neutrino.use(styleMinify);
+neutrino.use(styleMinify());
 
 // Usage showing overriding options
-neutrino.use(styleMinify, {
-  pluginId: 'optimize-css',
-  plugin: {
-    assetNameRegExp: /\.css$/g,
-    cssProcessorOptions: {},
-    canPrint: true,
-  }
-});
+neutrino.use(
+  styleMinify({
+    pluginId: 'optimize-css',
+    plugin: {
+      assetNameRegExp: /\.css$/g,
+      cssProcessorOptions: {},
+      canPrint: true,
+    },
+  }),
+);
 ```
 
 ```js
-// Using object or array middleware format
+// Using in .neutrinorc.js
+const styleMinify = require('@neutrinojs/style-minify');
 
 // Use with default options
 module.exports = {
-  use: ['@neutrinojs/style-minify']
+  use: [styleMinify()],
 };
 
 // Usage showing overriding options
 module.exports = {
   use: [
-    ['@neutrinojs/style-minify', {
+    styleMinify({
       pluginId: 'optimize-css',
       plugin: {
         assetNameRegExp: /\.css$/g,
         cssProcessorOptions: {},
         canPrint: true,
-      }
-    }]
-  ]
+      },
+    }),
+  ],
 };
 ```
 
-The `plugin` property is passed to [optimize-css-assets-webpack-plugin](https://github.com/NMFR/optimize-css-assets-webpack-plugin#configuration).
+The `plugin` property is passed to
+[optimize-css-assets-webpack-plugin](https://github.com/NMFR/optimize-css-assets-webpack-plugin#configuration).
 
 ## Customization
 
-`@neutrinojs/style-minify` creates some conventions to make overriding the configuration easier once you are ready to
-make changes.
+`@neutrinojs/style-minify` creates some conventions to make overriding the
+configuration easier once you are ready to make changes.
 
 ### Plugins
 
-The following is a list of plugins and their identifiers which can be overridden:
+The following is a list of plugins and their identifiers which can be
+overridden:
 
-| Name | Description | Environments and Commands |
-| --- | --- | --- |
-| `optimize-css` | Minifies css using `OptimizeCssAssetsPlugin`. | all |
+| Name           | Description                                   | NODE_ENV |
+| -------------- | --------------------------------------------- | -------- |
+| `optimize-css` | Minifies css using `OptimizeCssAssetsPlugin`. | all      |
 
 ## Contributing
 
-This middleware is part of the [neutrino-dev](https://github.com/mozilla-neutrino/neutrino-dev) repository, a monorepo
-containing all resources for developing Neutrino and its core presets and middleware. Follow the
+This middleware is part of the
+[neutrino](https://github.com/neutrinojs/neutrino) repository, a monorepo
+containing all resources for developing Neutrino and its core presets and
+middleware. Follow the
 [contributing guide](https://neutrinojs.org/contributing/) for details.
 
 [npm-image]: https://img.shields.io/npm/v/@neutrinojs/style-minify.svg

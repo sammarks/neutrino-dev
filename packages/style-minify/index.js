@@ -1,7 +1,7 @@
-const OptimizeCssPlugin = require('optimize-css-assets-webpack-plugin');
-
-module.exports = (neutrino, { pluginId = 'optimize-css', plugin = {} } = {}) => {
+module.exports = ({ pluginId = 'optimize-css', plugin = {} } = {}) => (
+  neutrino,
+) => {
   neutrino.config
     .plugin(pluginId)
-    .use(OptimizeCssPlugin, [plugin]);
+    .use(require.resolve('optimize-css-assets-webpack-plugin'), [plugin]);
 };

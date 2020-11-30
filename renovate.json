@@ -3,11 +3,8 @@
     "config:base",
     ":maintainLockFilesWeekly",
     ":prNotPending",
-    ":semanticCommitsDisabled",
-    ":unpublishSafe"
+    ":semanticCommitsDisabled"
   ],
-  "reviewers": [
-    "mozilla-neutrino/core-contributors"
-  ],
+  "reviewers": ["team:neutrinojs/core-contributors"],
   "pinVersions": false
 }

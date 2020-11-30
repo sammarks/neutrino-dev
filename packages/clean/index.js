@@ -1,13 +1,11 @@
-const CleanPlugin = require('clean-webpack-plugin');
-
-module.exports = (neutrino, { pluginId = 'clean', paths = [], ...opts } = {}) => {
+module.exports = ({ pluginId = 'clean', ...opts } = {}) => (neutrino) => {
   const options = {
-    root: neutrino.options.root,
     verbose: neutrino.options.debug,
-    ...opts
+    ...opts,
   };
 
   neutrino.config
     .plugin(pluginId)
-      .use(CleanPlugin, [paths, options]);
+    .use(require.resolve('clean-webpack-plugin'), [options])
+    .init((Plugin, args) => new Plugin.CleanWebpackPlugin(...args));
 };

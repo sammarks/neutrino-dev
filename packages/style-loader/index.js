@@ -1,85 +1,96 @@
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const merge = require('deepmerge');
+const { DuplicateRuleError } = require('neutrino/errors');
 
-module.exports = (neutrino, opts = {}) => {
-  const modules = opts.modules || true;
-  const modulesTest = opts.modulesTest || neutrino.regexFromExtensions(['module.css']);
-  const options = merge({
-    test: neutrino.regexFromExtensions(['css']),
-    ruleId: 'style',
-    styleUseId: 'style',
-    cssUseId: 'css',
-    css: {
-      importLoaders: opts.loaders ? opts.loaders.length : 0
+module.exports = (opts = {}) => (neutrino) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const modules = 'modules' in opts ? opts.modules : true;
+  const modulesTest =
+    opts.modulesTest || neutrino.regexFromExtensions(['module.css']);
+  const options = merge(
+    {
+      test: neutrino.regexFromExtensions(['css']),
+      ruleId: 'style',
+      css: {
+        importLoaders: opts.loaders ? opts.loaders.length : 0,
+      },
+      style: {},
+      modules,
+      modulesTest,
+      loaders: [],
+      extract: {
+        enabled: isProduction,
+        loader: {
+          esModule: true,
+        },
+        plugin: {
+          filename: isProduction
+            ? 'assets/[name].[contenthash:8].css'
+            : 'assets/[name].css',
+        },
+      },
     },
-    style: {},
-    modules,
-    modulesTest,
-    modulesSuffix: '-modules',
-    exclude: modules && modulesTest,
-    loaders: [],
-    extractId: 'extract',
-    extract: {
-      loader: {},
-      plugin: {
-        filename: process.env.NODE_ENV === 'production'
-          ? '[name].[contenthash:8].css'
-          : '[name].css'
-      }
-    }
-  }, opts);
+    opts,
+  );
 
-  const rules = [options];
+  if (neutrino.config.module.rules.has(options.ruleId)) {
+    throw new DuplicateRuleError('@neutrinojs/style-loader', options.ruleId);
+  }
+
+  const extractEnabled = options.extract && options.extract.enabled;
+  const rules = [
+    merge(options, {
+      oneOfId: 'normal',
+    }),
+  ];
 
   if (options.modules) {
-    rules.push(
+    rules.unshift(
       merge(options, {
         test: options.modulesTest,
-        exclude: options.modulesExclude,
-        ruleId: `${options.ruleId}${options.modulesSuffix}`,
-        styleUseId: `${options.styleUseId}${options.modulesSuffix}`,
-        cssUseId: `${options.cssUseId}${options.modulesSuffix}`,
-        extractId: `${options.extractId}${options.modulesSuffix}`,
+        oneOfId: 'modules',
         css: {
-          modules: options.modules
-        }
-      })
+          modules: options.modules,
+        },
+      }),
     );
-  };
+  }
 
-  rules.forEach(options => {
+  rules.forEach((options) => {
     const styleRule = neutrino.config.module.rule(options.ruleId);
     const loaders = [
       {
-        loader: options.extract ? MiniCssExtractPlugin.loader : require.resolve('style-loader'),
-        options: options.extract ? options.extract.loader : options.style,
-        useId: options.extract ? options.extractId : options.styleUseId
+        loader: extractEnabled
+          ? require.resolve('mini-css-extract-plugin/dist/loader')
+          : require.resolve('style-loader'),
+        options: extractEnabled ? options.extract.loader : options.style,
+        useId: extractEnabled ? 'extract' : 'style',
       },
       {
         loader: require.resolve('css-loader'),
         options: options.css,
-        useId: options.cssUseId
+        useId: 'css',
       },
-      ...options.loaders
-    ]
-    .map((loader, index) => ({
-      useId: `${options.cssUseId}-${index}`,
-      ...(typeof loader === 'object' ? loader : { loader })
+      ...options.loaders,
+    ].map((loader, index) => ({
+      useId: `css-${index}`,
+      ...(typeof loader === 'object' ? loader : { loader }),
     }));
 
-    loaders.forEach(loader => {
+    loaders.forEach((loader) => {
       styleRule
+        .oneOf(options.oneOfId)
         .test(options.test)
-        .when(options.exclude, rule => rule.exclude.add(options.exclude))
         .use(loader.useId)
-          .loader(loader.loader)
-          .when(loader.options, use => use.options(loader.options));
+        .loader(loader.loader)
+        .when(loader.options, (use) => use.options(loader.options));
     });
   });
 
-  if (options.extract) {
+  if (extractEnabled) {
     neutrino.config
-      .plugin(options.extractId)
-        .use(MiniCssExtractPlugin, [options.extract.plugin]);
+      .plugin('extract')
+      .use(require.resolve('mini-css-extract-plugin'), [
+        options.extract.plugin,
+      ]);
   }
 };

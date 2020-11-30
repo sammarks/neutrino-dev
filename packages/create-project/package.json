@@ -1,6 +1,6 @@
 {
   "name": "@neutrinojs/create-project",
-  "version": "9.0.0-0",
+  "version": "9.4.0",
   "description": "Scaffold new Neutrino projects with a CLI helper",
   "bin": {
     "create-project": "./bin/create-project.js"
@@ -12,7 +12,11 @@
     "bin",
     "commands"
   ],
-  "repository": "https://github.com/mozilla-neutrino/neutrino-dev/tree/master/packages/create-project",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neutrinojs/neutrino.git",
+    "directory": "packages/create-project"
+  },
   "author": "Hassan Ali <helfi92@gmail.com>",
   "license": "MPL-2.0",
   "keywords": [
@@ -30,22 +34,22 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=8.3",
+    "node": ">=10",
     "npm": ">=5.4.0",
-    "yarn": ">=1.2.1"
+    "yarn": ">=1.16.0"
   },
   "dependencies": {
-    "chalk": "^2.4.1",
-    "command-exists": "^1.2.6",
+    "chalk": "^4.1.0",
     "deepmerge": "^1.5.2",
-    "fs-extra": "^6.0.0",
-    "javascript-stringify": "^1.6.0",
-    "yargs": "^12.0.0",
-    "yeoman-environment": "^2.0.6",
-    "yeoman-generator": "^3.0.0"
+    "ejs": "^3.1.5",
+    "fs-extra": "^9.0.1",
+    "javascript-stringify": "^2.0.1",
+    "yargs": "^16.0.0",
+    "yeoman-environment": "^2.10.3",
+    "yeoman-generator": "^4.11.0"
   },
   "devDependencies": {
     "yeoman-assert": "^3.1.1",
-    "yeoman-test": "^1.7.0"
+    "yeoman-test": "^2.7.0"
   }
 }

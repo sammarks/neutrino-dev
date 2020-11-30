@@ -1,13 +1,14 @@
-<h1><p align="center"><img src="assets/logo.png" height="150"></p></h1>
+<h1><p align="center"><img src="assets/logo.png" height="150" width="150"></p></h1>
 
-### Create and build modern JavaScript applications with zero initial configuration
-#### Neutrino combines the power of webpack with the simplicity of presets.
+<h3>Create and build modern JavaScript applications with zero initial configuration</h3>
+<h4>Neutrino combines the power of webpack with the simplicity of presets.</h4>
 
 [![NPM version][npm-image]][npm-url]
 [![NPM downloads][npm-downloads]][npm-url]
 [![Build Status][travis-image]][travis-url]
+[![Netlify Status][netlify-image]][netlify-url]
 
-[https://github.com/mozilla-neutrino/neutrino-dev](https://github.com/mozilla-neutrino/neutrino-dev)
+[https://github.com/neutrinojs/neutrino](https://github.com/neutrinojs/neutrino)
 
 ---
 
@@ -24,5 +25,7 @@ cover.
 [npm-image]: https://img.shields.io/npm/v/neutrino.svg
 [npm-downloads]: https://img.shields.io/npm/dt/neutrino.svg
 [npm-url]: https://www.npmjs.com/package/neutrino
-[travis-image]: https://travis-ci.org/mozilla-neutrino/neutrino-dev.svg?branch=master
-[travis-url]: https://travis-ci.org/mozilla-neutrino/neutrino-dev
+[travis-image]: https://api.travis-ci.com/neutrinojs/neutrino.svg?branch=master
+[travis-url]: https://travis-ci.com/neutrinojs/neutrino
+[netlify-image]: https://api.netlify.com/api/v1/badges/faef6419-2d67-488a-95a8-998e1ad3e40f/deploy-status
+[netlify-url]: https://app.netlify.com/sites/neutrinojs/deploys

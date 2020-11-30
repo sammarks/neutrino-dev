@@ -1,41 +1,49 @@
-const compileLoader = require('@neutrinojs/compile-loader');
-const loaderMerge = require('@neutrinojs/loader-merge');
+const babelMerge = require('babel-merge');
 const web = require('@neutrinojs/web');
+const merge = require('deepmerge');
 
-module.exports = (neutrino, opts = {}) => {
+module.exports = (opts = {}) => (neutrino) => {
   const options = {
     hot: true,
     ...opts,
-    babel: compileLoader.merge({
-      plugins: [
-        [require.resolve('@babel/plugin-transform-react-jsx'), { pragma: 'h' }],
-        // Using loose for the reasons here:
-        // https://github.com/facebook/create-react-app/issues/4263
-        [require.resolve('@babel/plugin-proposal-class-properties'), { loose: true }]
-      ]
-    }, opts.babel || {})
+    babel: babelMerge(
+      {
+        plugins: [
+          [
+            require.resolve('@babel/plugin-transform-react-jsx'),
+            { pragma: 'h', pragmaFrag: 'Fragment' },
+          ],
+        ],
+      },
+      opts.babel || {},
+    ),
   };
 
-  neutrino.use(web, options);
+  neutrino.use(web(options));
 
-  neutrino.config
-    .resolve
-      .alias
-        .set('react', 'preact-compat')
-        .set('react-dom', 'preact-compat')
-        .set('create-react-class', 'preact-compat/lib/create-react-class')
-        .set('react-addons-css-transition-group', 'preact-css-transition-group');
+  neutrino.config.resolve.alias
+    .set('react', 'preact/compat')
+    .set('react-dom/test-utils', 'preact/test-utils')
+    // Must be after test-utils
+    .set('react-dom', 'preact/compat');
 
-  neutrino.config.when(neutrino.config.module.rules.has('lint'), () => {
-    neutrino.use(loaderMerge('lint', 'eslint'), {
-      plugins: ['react'],
-      baseConfig: {
-        settings: {
-          react: {
-            pragma: 'h'
-          }
-        }
-      }
-    });
-  });
+  const lintRule = neutrino.config.module.rules.get('lint');
+  if (lintRule) {
+    lintRule.use('eslint').tap(
+      // Don't adjust the lint configuration for projects using their own .eslintrc.
+      (lintOptions) =>
+        lintOptions.useEslintrc
+          ? lintOptions
+          : merge(lintOptions, {
+              baseConfig: {
+                plugins: ['react'],
+                settings: {
+                  react: {
+                    pragma: 'h',
+                  },
+                },
+              },
+            }),
+    );
+  }
 };

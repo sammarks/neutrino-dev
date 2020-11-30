@@ -1,94 +1,99 @@
 # Neutrino StandardJS Preset
 
-`@neutrinojs/standardjs` is a Neutrino preset that supports linting JavaScript projects with the
-[StandardJS ESLint config](https://standardjs.com).
+`@neutrinojs/standardjs` is a Neutrino preset that supports linting JavaScript
+projects with the [StandardJS ESLint config](https://standardjs.com).
 
-[![NPM version][npm-image]][npm-url]
-[![NPM downloads][npm-downloads]][npm-url]
+[![NPM version][npm-image]][npm-url] [![NPM downloads][npm-downloads]][npm-url]
 
 ## Features
 
-- Zero upfront configuration necessary to start linting your project with StandardJS
+- Zero upfront configuration necessary to start linting your project with
+  StandardJS
 - Modern Babel knowledge supporting ES modules, Web and Node.js apps
-- Highly visible during development, fails compilation when building for production
+- Highly visible during development, fails compilation when building for
+  production
 - Easily extensible to customize your project as needed
 
 ## Requirements
 
-- Node.js v8.3+
+- Node.js 10+
 - Yarn v1.2.1+, or npm v5.4+
-- Neutrino v8, Neutrino build preset
+- Neutrino 9 and one of the Neutrino build presets
+- webpack 4
+- ESLint 6 or 7
 
-## Installation
+## Quickstart
 
-`@neutrinojs/standardjs` can be installed via the Yarn or npm clients. Inside your project, make sure
-`neutrino` and `@neutrinojs/standardjs` are development dependencies. You will also be using
-another Neutrino preset for building your application source code.
+The fastest way to get started is by using the `create-project` scaffolding
+tool. See the
+[Create new project](https://neutrinojs.org/installation/create-new-project/)
+docs for more details.
+
+Don’t want to use the CLI helper? No worries, we have you covered with the
+[manual installation](#manual-installation).
+
+## Manual Installation
+
+First follow the manual installation instructions for your chosen build preset.
+
+`@neutrinojs/standardjs` can be installed via the Yarn or npm clients. Inside
+your project, make sure `@neutrinojs/standardjs` and `eslint` are development
+dependencies. You will also be using another Neutrino preset for building your
+application source code.
 
 #### Yarn
 
 ```bash
-❯ yarn add --dev @neutrinojs/standardjs
+❯ yarn add --dev @neutrinojs/standardjs eslint
 ```
 
 #### npm
 
 ```bash
-❯ npm install --save-dev @neutrinojs/standardjs
+❯ npm install --save-dev @neutrinojs/standardjs eslint
 ```
 
-## Project Layout
-
-`@neutrinojs/standardjs` follows the standard [project layout](https://neutrinojs.org/project-layout/) specified by Neutrino. This
-means that by default all project source code should live in a directory named `src` in the root of the
-project.
-
-## Quickstart
-
-After adding the StandardJS preset to your Neutrino-built project, edit your project's package.json to add the preset for
-linting **before** your build preset. For example, if you are building your project using `@neutrinojs/web`:
-
-```json
-{
-  "scripts": {
-    "start": "neutrino start --use @neutrinojs/standardjs @neutrinojs/web",
-    "build": "neutrino build --use @neutrinojs/standardjs @neutrinojs/web"
-  }
-}
-```
-
-Or if you are using a `.neutrinorc.js`, add this preset to your use array instead of `--use` flags:
+After that, edit your project's `.neutrinorc.js` to add the preset for linting
+**before** your build preset. For example, when building your project using
+`@neutrinojs/web`:
 
 ```js
+const standardjs = require('@neutrinojs/standardjs');
+const web = require('@neutrinojs/web');
+
 module.exports = {
-  use: [
-    '@neutrinojs/standardjs',
-    '@neutrinojs/web'
-  ]
+  options: {
+    root: __dirname,
+  },
+  use: [standardjs(), web()],
 };
 ```
 
-Start the app, then check your console for any linting errors. If everything is successful, you should see no errors in
-the console. ESLint errors visible during development are reported, but will still continue to build and serve your
-project. ESLint errors during build will not build the project, and will cause the command to fail.
+Start the app, then check your console for any linting errors. If everything is
+successful, you should see no errors in the console. ESLint errors visible
+during development are reported, but will still continue to build and serve your
+project. ESLint errors during build will not build the project, and will cause
+the command to fail.
 
 #### Yarn
 
 ```bash
 ❯ yarn start
 
-✔ Development server running on: http://localhost:5000
-✔ Build completed
-
 ERROR in ./src/index.js
+Module Error (from ./node_modules/eslint-loader/index.js):
 
-/web/src/index.js
-  7:1   warning  Unexpected console statement                no-console
-  7:14  error    A space is required after '{'               babel/object-curly-spacing
-  7:20  error    Missing space before value for key 'hello'  key-spacing
-  7:27  error    A space is required before '}'              babel/object-curly-spacing
+error: Missing semicolon (semi) at src/index.js:35:51:
+  33 |
+  34 |
+> 35 | const MOUNT_NODE = document.getElementById("root")
+     |                                                   ^
+  36 |
+  37 |
+  38 |
 
-✖ 4 problems (3 errors, 1 warning)
+1 error found.
+1 error potentially fixable with the `--fix` option.
 ```
 
 #### npm
@@ -96,220 +101,186 @@ ERROR in ./src/index.js
 ```bash
 ❯ npm start
 
-✔ Development server running on: http://localhost:5000
-✔ Build completed
-
 ERROR in ./src/index.js
+Module Error (from ./node_modules/eslint-loader/index.js):
 
-/web/src/index.js
-  7:1   warning  Unexpected console statement                no-console
-  7:14  error    A space is required after '{'               babel/object-curly-spacing
-  7:20  error    Missing space before value for key 'hello'  key-spacing
-  7:27  error    A space is required before '}'              babel/object-curly-spacing
+error: Missing semicolon (semi) at src/index.js:35:51:
+  33 |
+  34 |
+> 35 | const MOUNT_NODE = document.getElementById("root")
+     |                                                   ^
+  36 |
+  37 |
+  38 |
 
-✖ 4 problems (3 errors, 1 warning)
+1 error found.
+1 error potentially fixable with the `--fix` option.
 ```
+
+## Project Layout
+
+`@neutrinojs/standardjs` follows the standard
+[project layout](https://neutrinojs.org/project-layout/) specified by Neutrino.
+This means that by default all project source code should live in a directory
+named `src` in the root of the project.
 
 ## Building
 
-`@neutrinojs/standardjs` will cause errors to **fail your build** when creating a bundle via `neutrino build`. If
-you want to ease introduction of this linting preset to your project, consider only adding it to your use list for
-`neutrino start` or `development` environment until all linting errors have been resolved.
+`@neutrinojs/standardjs` will cause errors to **fail your build** when
+`NODE_ENV` is not `'development'`. If you want to ease introduction of this
+linting preset to your project, consider only adding it to your `use` list
+during development until all linting errors have been resolved.
 
 ```bash
 ❯ yarn build
 
+ERROR in ./src/index.js
+Module Error (from ./node_modules/eslint-loader/index.js):
 
-/web/src/index.js
-  6:1   warning  Unexpected console statement            no-console
-  6:14  error    A space is required after '{'           babel/object-curly-spacing
-  6:16  error    Missing space before value for key 'a'  key-spacing
-  6:17  error    A space is required before '}'          babel/object-curly-spacing
+error: Missing semicolon (semi) at src/index.js:35:51:
+  33 |
+  34 |
+> 35 | const MOUNT_NODE = document.getElementById("root")
+     |                                                   ^
+  36 |
+  37 |
+  38 |
 
-✖ 4 problems (3 errors, 1 warning)
-
-error Command failed with exit code 1.
+1 error found.
+1 error potentially fixable with the `--fix` option.
 ```
 
-_Example: ease linting into project by only adding when `NODE_ENV=development`, e.g. `neutrino start`:_
+_Example: ease linting into project by only enabling when `NODE_ENV=development`
+(ie: `--mode development`):_
 
 ```js
+const standardjs = require('@neutrinojs/standardjs');
+const web = require('@neutrinojs/web');
+
 module.exports = {
-  use: [
-    '@neutrinojs/web'
-  ],
-  env: {
-    NODE_ENV: {
-      development: {
-        use: ['@neutrinojs/standardjs']
-      }
-    }
-  }
+  options: {
+    root: __dirname,
+  },
+  use: [process.env.NODE_ENV === 'development' ? standardjs() : false, web()],
 };
 ```
 
 ## Middleware options
 
-This preset uses the same middleware options as [@neutrinojs/eslint](https://neutrinojs.org/packages/eslint/).
-If you wish to customize what is included, excluded, or any ESLint options, you can provide an options object with the
-middleware and this will be merged with our internal defaults for this preset. Use an array pair instead of a string
-to supply these options.
+This preset uses the same middleware options as
+[@neutrinojs/eslint](https://neutrinojs.org/packages/eslint/#usage). If you wish
+to customize what is included, excluded, or any ESLint options, you can provide
+an options object with the middleware and this will be merged with our internal
+defaults for this preset.
 
-_Example: Turn on semicolons as being required, as opposed to the StandardJS rules._
+By default the preset configures `eslint-plugin-react` to target the latest
+version of React. If using an older version, you must explicitly pass it as in
+the example below.
+
+_Example: Extend from a custom configuration (it will be applied after
+StandardJS), turn on semicolons as being required, and set a specific React
+version._
 
 ```js
+const standardjs = require('@neutrinojs/standardjs');
+
 module.exports = {
+  options: {
+    root: __dirname,
+  },
   use: [
-    ['@neutrinojs/standardjs', {
+    standardjs({
       eslint: {
-        rules: {
-          semi: 'error'
-        }
-      }
-    }]
-  ]
+        // For supported options, see:
+        // https://github.com/webpack-contrib/eslint-loader#options
+        // https://eslint.org/docs/developer-guide/nodejs-api#cliengine
+        // The options under `baseConfig` correspond to those
+        // that can be used in an `.eslintrc.*` file.
+        baseConfig: {
+          extends: ['my-custom-config'],
+          rules: {
+            'babel/semi': ['error', 'always'],
+          },
+          settings: {
+            react: {
+              version: '16.5',
+            },
+          },
+        },
+      },
+    }),
+  ],
 };
 ```
 
+## Exposing generated lint configuration via `.eslintrc.js`
+
+`@neutrinojs/eslint`, from which this preset inherits, provides an `.eslintrc()`
+output handler for generating the ESLint configuration in a format suitable for
+use in an `.eslintrc.js` file. This allows the ESLint CLI to be used outside of
+building the project, and for IDEs and text editors to provide linting
+hints/fixes.
+
+Create a `.eslintrc.js` file in the root of the project, containing:
+
+```js
+// .eslintrc.js
+const neutrino = require('neutrino');
+
+module.exports = neutrino().eslintrc();
+```
+
+This `.eslintrc.js` configuration will be automatically used when running the
+ESLint CLI. For convenience a `lint` script alias can be added to your
+`package.json`, allowing linting to be run via `yarn lint` or `npm run lint`:
+
+```json
+{
+  "scripts": {
+    "lint": "eslint --cache --format codeframe --ext mjs,jsx,js src"
+  }
+}
+```
+
+Projects may face a problem when their editor or IDE lints all files and
+highlights errors that were normally excluded from source, i.e. Neutrino's
+`include` and `exclude` options. This is because the ESLint CLI does not have a
+way to specify included and excluded files from the `.eslintrc.js`
+configuration. Instead you will need to create an
+[.eslintignore](https://eslint.org/docs/user-guide/configuring#ignoring-files-and-directories)
+file that controls which files should be excluded from linting.
+
+## Using your own `.eslintrc.*`
+
+If instead you would prefer to use your own non-generated `.eslintrc.*` file,
+set `useEslintrc` to `true`. This will cause `@neutrinojs/standardjs` to only
+set the loader-specific configuration defaults, and leave all other linting
+configuration to be managed by the standalone `.eslintrc.*` file.
+
+See the `@neutrinojs/eslint`
+[documentation](https://neutrinojs.org/packages/eslint/#using-your-own-eslintrc)
+for more details.
+
 ## Customizing
 
-To override the build configuration, start with the documentation on [customization](https://neutrinojs.org/customization/).
-`@neutrinojs/standardjs` creates some conventions to make overriding the configuration easier once you are ready to
-make changes.
+To override the lint configuration, start with the documentation on
+[customization](https://neutrinojs.org/customization/). `@neutrinojs/standardjs`
+creates some conventions to make overriding the configuration easier once you
+are ready to make changes.
 
 ### Rules
 
 The following is a list of rules and their identifiers which can be overridden:
 
-| Name | Description | Environments and Commands |
-| --- | --- | --- |
-| `lint` | Lints JS and JSX files from the `src` directory using ESLint. Contains a single loader named `eslint`. This is inherited from `@neutrinojs/eslint`. | all |
-
-### Information
-
-If you want your preset or middleware to also extend from another **ESLint configuration or preset** that you have made
-a dependency, you must use `baseConfig.extends` rather than just `extends`. This is a limitation of ESLint, not this
-middleware.
-
-### Override configuration
-
-By following the [customization guide](https://neutrinojs.org/customization/) and knowing the rule and loader IDs above,
-you can also override or augment the build by providing a function to your `.neutrinorc.js` use array. You can also
-make this change from the Neutrino API when using the `use` method.
-
-_Example: Turn on semicolons as being required, as opposed to the StandardJS rules, from `.neutrinorc.js` using a function and the API:_
-
-```js
-module.exports = {
-  use: [
-    '@neutrinojs/standardjs',
-    (neutrino) => neutrino.config.module
-      .rule('lint')
-      .use('eslint')
-      .tap(options => ({
-        ...options,
-        rules: {
-          semi: 'error'
-        }
-      }))
-  ]
-};
-```
-
-## eslint CLI
-
-_This is the recommended way to perform a one-off lint in a Neutrino project, and is inherited from @neutrinojs/eslint._
-
-You can also have Neutrino invoke ESLint for you if you wish to perform a one-time lint. This avoids needing to install
-ESLint manually, creating a `.eslintrc.js` file, or having to manage includes and ignores. As long as the ESLint
-middleware is loaded, you have access to a command to run ESLint from the command line.
-
-This middleware registers a command named `lint` which programmatically calls ESLint and prints the results to
-the console.
-
-```bash
-❯ neutrino lint
-```
-
-```bash
-❯ neutrino lint --fix
-```
-
-## eslintrc Config
-
-If you cannot or do not wish to use Neutrino to execute one-off linting, you can still use ESLint manually.
-
-`@neutrinojs/eslint`, from which this preset inherits, also provides a method for getting the ESLint
-configuration suitable for use in an eslintrc file. Typically this is used for providing hints or fix solutions to the
-development environment, e.g. IDEs and text editors. Doing this requires
-[creating an instance of the Neutrino API](https://neutrinojs.org/api/) and providing the middleware it uses. If you keep all
-this information in a `.neutrinorc.js`, this should be relatively straightforward. By providing all the middleware used
-to Neutrino, you can ensure all the linting options used across all middleware will be merged together for your
-development environment, without the need for copying, duplication, or loss of organization and separation.
-
-This middleware registers another command named `eslintrc` which returns an ESLint configuration object suitable for
-consumption by the ESLint CLI. Use the Neutrino API's `call` method to invoke this command:
-
-_Example: Create a .eslintrc.js file in the root of the project, using `.neutrinorc.js` middleware._
-
-```js
-// .eslintrc.js
-const { Neutrino } = require('neutrino');
-
-// Specify middleware to Neutrino prior to calling eslintrc.
-// Even if using .neutrinorc.js, you must specify it when using
-// the API
-module.exports = Neutrino({ root: __dirname })
-  .use('.neutrinorc.js')
-  .call('eslintrc');
-```
-
-_Example: Create a .eslintrc.js file in the root of the project, using specified middleware._
-
-```js
-// .eslintrc.js
-const { Neutrino } = require('neutrino');
-
-module.exports = Neutrino({ root: __dirname })
-  .use('@neutrinojs/standardjs', {
-    eslint: {
-      rules: { semi: 'error' }
-    }
-  })
-  .use('@neutrinojs/react')
-  .call('eslintrc');
-```
-
-If you are able, only use a `.eslintrc.js` file for editor hints, and use the Neutrino `lint` command for one-off linting
-or fixes.
-
-Projects may face a problem when their editor or IDE lints all files and highlights errors that were normally excluded
-from source, i.e. Neutrino's `include` and `exclude` options. This is because the ESLint CLI does not have a way to
-specify included and excluded files from configuration. If you still wish to use ESLint's CLI for linting, consider
-setting [CLI flags](https://eslint.org/docs/user-guide/command-line-interface#options) or using an
-[eslintignore](https://eslint.org/docs/user-guide/configuring#ignoring-files-and-directories) to choose which files to
-include or exclude from linting.
-
-Unfortunately ESLint does not provide the possibility to configure ignored paths from Neutrino configuration and exclude them
-from linting. Projects authors should define this manually in their project root directory in a `.eslintignore` file. This
-is one of the main reasons to prefer using the `lint` CLI command with this middleware, as it avoids a lot of manual
-configuration and boilerplate.
-
-`.eslintignore` file:
-
-```
-/build
-/*.*
-```
-
-ESLint will exclude built files and any files in the root directory (e.g. custom Neutrino configuration) but `src` and
-`test` folders will be still checked. `node_modules` are ignored by default in ESLint. More information can be found
-in the [ESLint user guide](https://eslint.org/docs/user-guide/configuring#ignoring-files-and-directories).
+| Name   | Description                                                                                                                                                                  | NODE_ENV |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `lint` | By default, lints JS and JSX files from the `src` and `test` directories using ESLint. Contains a single loader named `eslint`. This is inherited from `@neutrinojs/eslint`. | all      |
 
 ## Contributing
 
-This preset is part of the [neutrino-dev](https://github.com/mozilla-neutrino/neutrino-dev) repository, a monorepo
-containing all resources for developing Neutrino and its core presets and middleware. Follow the
+This preset is part of the [neutrino](https://github.com/neutrinojs/neutrino)
+repository, a monorepo containing all resources for developing Neutrino and its
+core presets and middleware. Follow the
 [contributing guide](https://neutrinojs.org/contributing/) for details.
 
 [npm-image]: https://img.shields.io/npm/v/@neutrinojs/standardjs.svg

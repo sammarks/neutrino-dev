@@ -1,52 +1,62 @@
 # Neutrino Karma Preset
 
-`@neutrinojs/karma` is a Neutrino preset that supports testing web applications using the Karma test runner.
+`@neutrinojs/karma` is a Neutrino preset that supports testing web applications
+using the Karma test runner.
 
-[![NPM version][npm-image]][npm-url]
-[![NPM downloads][npm-downloads]][npm-url]
+[![NPM version][npm-image]][npm-url] [![NPM downloads][npm-downloads]][npm-url]
 
 ## Features
 
-- Zero upfront configuration necessary to start testing on real browsers with Karma, Mocha, and Chrome Headless
-- Babel compilation that compiles your tests using the same Babel options used by your source code
+- Zero upfront configuration necessary to start testing on real browsers with
+  Karma, Mocha, and Chrome Headless
+- Babel compilation that compiles your tests using the same Babel options used
+  by your source code
 - Source watching for re-running of tests on change
 - Out-of-the-box support for running in CI
 - Easily extensible to customize your testing as needed
 
 ## Requirements
 
-- Node.js v8.3+
+- Node.js 10+
 - Yarn v1.2.1+, or npm v5.4+
-- Neutrino v8, Neutrino build preset
+- Neutrino 9 and one of the Neutrino build presets
+- webpack 4
+- Karma 4 or 5 and Karma CLI 2
+- Mocha 6 or 7
 
-## Installation
+## Quickstart
 
-`@neutrinojs/karma` can be installed via the Yarn or npm clients. Inside your project, make sure
-`neutrino` and `@neutrinojs/karma` are development dependencies. You will also be using
-another Neutrino preset for building your application source code.
+The fastest way to get started is by using the `create-project` scaffolding
+tool. See the
+[Create new project](https://neutrinojs.org/installation/create-new-project/)
+docs for more details.
+
+Don’t want to use the CLI helper? No worries, we have you covered with the
+[manual installation](#manual-installation).
+
+## Manual Installation
+
+First follow the manual installation instructions for your chosen build preset.
+
+`@neutrinojs/karma` can be installed via the Yarn or npm clients. Inside your
+project, make sure the dependencies below are installed as development
+dependencies. You will also be using another Neutrino preset for building your
+application source code.
 
 #### Yarn
 
 ```bash
-❯ yarn add --dev @neutrinojs/karma
+❯ yarn add --dev @neutrinojs/karma karma karma-cli mocha
 ```
 
 #### npm
 
 ```bash
-❯ npm install --save-dev @neutrinojs/karma
+❯ npm install --save-dev @neutrinojs/karma karma karma-cli mocha
 ```
 
-## Project Layout
-
-`@neutrinojs/karma` follows the standard [project layout](https://neutrinojs.org/project-layout/) specified by Neutrino. This
-means that by default all project test code should live in a directory named `test` in the root of the
-project. Test files end in `_test.js` by default.
-
-## Quickstart
-
-After adding the Karma preset to your Neutrino-built project, add a new directory named `test` in the root of the
-project, with a single JS file named `simple_test.js` in it.
+After that, add a new directory named `test` in the root of the project, with a
+single JS file named `simple_test.js` in it.
 
 ```bash
 ❯ mkdir test && touch test/simple_test.js
@@ -64,25 +74,38 @@ describe('simple', () => {
 });
 ```
 
-Now edit your project's package.json to add commands for testing your application. In this example,
-let's pretend this is a React project:
+Now update your project's `.neutrinorc.js` to add the `@neutrinojs/karma`
+preset. In this example, let's pretend this is a React project:
+
+```js
+const react = require('@neutrinojs/react');
+const karma = require('@neutrinojs/karma');
+
+module.exports = {
+  use: [react(), karma()],
+};
+```
+
+Create a `karma.conf.js` file in the root of the project, that will be used by
+the Karma CLI:
+
+```js
+// karma.conf.js
+const neutrino = require('neutrino');
+
+process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+
+module.exports = neutrino().karma();
+```
+
+Then add these scripts entries to your `package.json` to simplify running Karma:
 
 ```json
 {
   "scripts": {
-    "test": "neutrino test --use @neutrinojs/react @neutrinojs/karma"
+    "test": "karma start --single-run",
+    "test:watch": "karma start"
   }
-}
-```
-
-Or if you are using `.neutrinorc.js`, add this preset to your use array instead of `--use` flags:
-
-```js
-module.exports = {
-  use: [
-    '@neutrinojs/react',
-    '@neutrinojs/karma'
-  ]
 }
 ```
 
@@ -93,11 +116,8 @@ Run the tests, and view the results in your console:
 ```bash
 ❯ yarn test
 
-START:
-21 11 2017 06:56:39.804:INFO [karma]: Karma v1.7.1 server started at http://0.0.0.0:9876/
-21 11 2017 06:56:39.806:INFO [launcher]: Launching browser ChromeHeadless with unlimited concurrency
-21 11 2017 06:56:39.809:INFO [launcher]: Starting browser ChromeHeadless
-21 11 2017 06:56:40.170:INFO [HeadlessChrome 0.0.0 (Mac OS X 10.13.0)]: Connected on socket PW-kCVej8pQuT-HAAAAA with id 14691980
+# Karma output removed for brevity
+
   simple
     ✔ should be sane
 
@@ -112,11 +132,8 @@ SUMMARY:
 ```bash
 ❯ npm test
 
-START:
-21 11 2017 06:56:39.804:INFO [karma]: Karma v1.7.1 server started at http://0.0.0.0:9876/
-21 11 2017 06:56:39.806:INFO [launcher]: Launching browser ChromeHeadless with unlimited concurrency
-21 11 2017 06:56:39.809:INFO [launcher]: Starting browser ChromeHeadless
-21 11 2017 06:56:40.170:INFO [HeadlessChrome 0.0.0 (Mac OS X 10.13.0)]: Connected on socket PW-kCVej8pQuT-HAAAAA with id 14691980
+# Karma output removed for brevity
+
   simple
     ✔ should be sane
 
@@ -133,89 +150,92 @@ import thingToTest from '../src/thing';
 ```
 
 For more details on specific Karma usage, please refer to their
-[documentation](https://karma-runner.github.io/1.0/index.html).
+[documentation](https://karma-runner.github.io/2.0/index.html).
+
+## Project Layout
+
+`@neutrinojs/karma` follows the standard
+[project layout](https://neutrinojs.org/project-layout/) specified by Neutrino.
+This means that by default all project test code should live in a directory
+named `test` in the root of the project. Test files end in `_test.js` by
+default.
 
 ## Executing single tests
 
-By default this preset will execute every test file located in your test directory ending in the appropriate file
-extension. Use the command line [`files` parameters](https://neutrinojs.org/cli/#neutrino-test) to execute individual tests.
+By default this preset will execute every test file located in your test
+directory ending in the appropriate file extension. Pass specific test filenames
+to the Karma CLI to override this.
 
 ## Watching for changes
 
-`@neutrinojs/karma` can watch for changes on your source directory and subsequently re-run tests. Simply use the
-`--watch` flag with your `neutrino test` command.
+`@neutrinojs/karma` can watch for changes on your source directory and
+subsequently re-run tests. Simply omit the `--single-run` argument when running
+the Karma CLI (for example by using the `test:watch` scripts entry above).
 
 ## Preset options
 
-You can provide custom options and have them merged with this preset's default options, which are subsequently passed
-to Karma. You can modify Karma settings from `.neutrinorc.js` by overriding with any options Karma accepts. In a standalone
-Karma project this is typically done in a `karma.conf.js` or similar file, but `@neutrinojs/karma` allows
-configuration through `.neutrinorc.js` as well. This accepts the same configuration options as outlined in the
-[Karma documentation](https://karma-runner.github.io/1.0/config/configuration-file.html). Use an array pair instead of
-a string to supply these options.
+You can provide custom options and have them merged with this preset's default
+options, which are subsequently passed to Karma. You can modify Karma settings
+from `.neutrinorc.js` by overriding with any options Karma accepts. In a
+standalone Karma project this is typically done in a `karma.conf.js` or similar
+file, but `@neutrinojs/karma` allows configuration through `.neutrinorc.js` as
+well. This accepts the same configuration options as outlined in the
+[Karma documentation](https://karma-runner.github.io/2.0/config/configuration-file.html).
 
 _Example: Change the duration Karma waits for a browser to reconnect (in ms)._
 
 ```js
-module.exports = {
-  use: [
-    ['@neutrinojs/karma', { browserDisconnectTimeout: 5000 }]
-  ]
-};
-```
+const karma = require('@neutrinojs/karma');
 
-If you wish to completely override the Karma configuration instead of it being merged, set the `override` property to
-`true` in the preset options:
-
-```js
 module.exports = {
-  use: [
-    ['@neutrinojs/karma', {
-      override: true,
-      /* specify all other Karma configuration options */
-    }]
-  ]
+  use: [karma({ browserDisconnectTimeout: 5000 })],
 };
 ```
 
 ## Using from CI
 
-`@neutrinojs/karma` needs no additional configuration to run your tests in CI infrastructure when using Chrome Headless.
-If you decide to use a browser with a display, you will need to ensure your CI can actually run the tests similar to
-a headless mode. This usually means having a display emulator and access to the browsers you are testing against.
+`@neutrinojs/karma` needs no additional configuration to run your tests in CI
+infrastructure when using Chrome Headless. If you decide to use a browser with a
+display, you will need to ensure your CI can actually run the tests similar to a
+headless mode. This usually means having a display emulator and access to the
+browsers you are testing against.
 
-For an example using Travis-CI and normal Chrome, you will need to add the following to your `.travis.yml` file:
+For an example using Travis-CI and normal Chrome, you will need to add the
+following to your `.travis.yml` file:
 
 ```yaml
 before_install:
-- export CHROME_BIN=chromium-browser
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
+  - export CHROME_BIN=chromium-browser
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 ```
 
-You may also need to pass additional options to the Karma preset to change its behavior in CI, using standard
-Chrome as an example instead of Chrome Headless:
+You may also need to pass additional options to the Karma preset to change its
+behavior in CI, using standard Chrome as an example instead of Chrome Headless:
 
 ```js
+const karma = require('@neutrinojs/karma');
+
 module.exports = {
   use: [
-    ['@neutrinojs/karma', {
+    karma({
       browsers: [process.env.CI ? 'ChromeCI' : 'Chrome'],
       customLaunchers: {
         ChromeCI: {
           base: 'Chrome',
-          flags: ['--no-sandbox']
-        }
+          flags: ['--no-sandbox'],
+        },
       },
-    }]
-  ]
-}
+    }),
+  ],
+};
 ```
 
 ## Contributing
 
-This preset is part of the [neutrino-dev](https://github.com/mozilla-neutrino/neutrino-dev) repository, a monorepo
-containing all resources for developing Neutrino and its core presets and middleware. Follow the
+This preset is part of the [neutrino](https://github.com/neutrinojs/neutrino)
+repository, a monorepo containing all resources for developing Neutrino and its
+core presets and middleware. Follow the
 [contributing guide](https://neutrinojs.org/contributing/) for details.
 
 [npm-image]: https://img.shields.io/npm/v/@neutrinojs/karma.svg

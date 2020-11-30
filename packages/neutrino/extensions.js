@@ -4,7 +4,7 @@ module.exports = {
   // Modifying a value here should have an accompanying change there as well.
   // We can't pull in neutrino there as that would potentially give us
   // conflicting versions in node_modules.
-  source: ['js', 'jsx', 'vue', 'ts', 'tsx', 'mjs'],
+  source: ['mjs', 'jsx', 'js'],
   style: ['css', 'less', 'sass', 'scss'],
   media: [
     'jpg',
@@ -24,6 +24,6 @@ module.exports = {
     'mp3',
     'm4a',
     'aac',
-    'oga'
-  ]
+    'oga',
+  ],
 };

@@ -1,6 +1,6 @@
 {
   "name": "@neutrinojs/start-server",
-  "version": "9.0.0-0",
+  "version": "9.4.0",
   "description": "Neutrino middleware for starting a server after a build",
   "main": "index.js",
   "keywords": [
@@ -11,14 +11,18 @@
   ],
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
-  "repository": "https://github.com/mozilla-neutrino/neutrino-dev/tree/master/packages/start-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neutrinojs/neutrino.git",
+    "directory": "packages/start-server"
+  },
   "homepage": "https://neutrinojs.org",
-  "bugs": "https://github.com/mozilla-neutrino/neutrino-dev/issues",
+  "bugs": "https://github.com/neutrinojs/neutrino/issues",
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=8.3",
+    "node": ">=10",
     "npm": ">=5.4.0",
     "yarn": ">=1.2.1"
   },
@@ -26,7 +30,7 @@
     "start-server-webpack-plugin": "^2.2.5"
   },
   "peerDependencies": {
-    "neutrino": "^9.0.0-0",
+    "neutrino": "^9.0.0",
     "webpack": "^4.0.0"
   }
 }

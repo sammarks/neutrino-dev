@@ -1,13 +1,20 @@
-module.exports = (neutrino, options = {}) => {
+const { DuplicateRuleError } = require('neutrino/errors');
+
+module.exports = (options = {}) => (neutrino) => {
+  const ruleId = 'font';
   const isProduction = process.env.NODE_ENV === 'production';
   const defaultOptions = {
-    name: isProduction ? '[name].[hash:8].[ext]' : '[name].[ext]'
+    name: isProduction ? 'assets/[name].[hash:8].[ext]' : 'assets/[name].[ext]',
   };
 
+  if (neutrino.config.module.rules.has(ruleId)) {
+    throw new DuplicateRuleError('@neutrinojs/font-loader', ruleId);
+  }
+
   neutrino.config.module
-    .rule('font')
+    .rule(ruleId)
     .test(/\.(eot|ttf|woff|woff2)(\?v=\d+\.\d+\.\d+)?$/)
     .use('file')
-      .loader(require.resolve('file-loader'))
-      .options({ ...defaultOptions, ...options });
+    .loader(require.resolve('file-loader'))
+    .options({ ...defaultOptions, ...options });
 };

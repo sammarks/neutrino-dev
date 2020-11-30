@@ -1,6 +1,6 @@
 {
   "name": "@neutrinojs/jest",
-  "version": "9.0.0-0",
+  "version": "9.4.0",
   "description": "Neutrino preset for testing Neutrino projects with Jest",
   "main": "src/index.js",
   "keywords": [
@@ -10,28 +10,31 @@
   ],
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
-  "repository": "https://github.com/mozilla-neutrino/neutrino-dev/tree/master/packages/jest",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neutrinojs/neutrino.git",
+    "directory": "packages/jest"
+  },
   "homepage": "https://neutrinojs.org",
-  "bugs": "https://github.com/mozilla-neutrino/neutrino-dev/issues",
+  "bugs": "https://github.com/neutrinojs/neutrino/issues",
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=8.3",
+    "node": ">=10",
     "npm": ">=5.4.0",
     "yarn": ">=1.2.1"
   },
   "dependencies": {
-    "@babel/core": "7.0.0-beta.54",
-    "@babel/plugin-transform-modules-commonjs": "7.0.0-beta.54",
-    "@neutrinojs/compile-loader": "9.0.0-0",
-    "@neutrinojs/loader-merge": "9.0.0-0",
-    "babel-plugin-jest-hoist": "^23.0.0",
-    "eslint-plugin-jest": "^21.15.1",
+    "@babel/core": "^7.11.4",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^26.3.0",
+    "deepmerge": "^1.5.2",
+    "eslint-plugin-jest": "^23.20.0",
     "lodash.omit": "^4.5.0"
   },
   "peerDependencies": {
-    "jest": "^23.0.0",
-    "neutrino": "^9.0.0-0"
+    "jest": "^24.0.0 || ^25.0.0 || ^26.0.0",
+    "neutrino": "^9.0.0"
   }
 }

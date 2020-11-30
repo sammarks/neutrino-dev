@@ -1,6 +1,6 @@
 {
   "name": "@neutrinojs/style-loader",
-  "version": "9.0.0-0",
+  "version": "9.4.0",
   "description": "Neutrino middleware for importing and loading stylesheets from modules",
   "main": "index.js",
   "keywords": [
@@ -12,25 +12,29 @@
   ],
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
-  "repository": "https://github.com/mozilla-neutrino/neutrino-dev/tree/master/packages/style-loader",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neutrinojs/neutrino.git",
+    "directory": "packages/style-loader"
+  },
   "homepage": "https://neutrinojs.org",
-  "bugs": "https://github.com/mozilla-neutrino/neutrino-dev/issues",
+  "bugs": "https://github.com/neutrinojs/neutrino/issues",
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=8.3",
+    "node": ">=10",
     "npm": ">=5.4.0",
     "yarn": ">=1.2.1"
   },
   "dependencies": {
-    "css-loader": "^1.0.0",
+    "css-loader": "^3.6.0",
     "deepmerge": "^1.5.2",
-    "mini-css-extract-plugin": "^0.4.0",
-    "style-loader": "^0.21.0"
+    "mini-css-extract-plugin": "^0.12.0",
+    "style-loader": "^1.2.1"
   },
   "peerDependencies": {
-    "neutrino": "^9.0.0-0",
+    "neutrino": "^9.0.0",
     "webpack": "^4.0.0"
   }
 }
